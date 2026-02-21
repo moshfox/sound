@@ -20,7 +20,7 @@ const firebaseConfig = {
   measurementId: "G-PKQV5241GQ"
 };
 
-const ADMIN_EMAIL = "hodelyproductions@gmail.com";
+const ADMIN_EMAIL = "hodely@gmail.com";
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -670,4 +670,5 @@ function cleanup(){
   if (unsubSounds) { unsubSounds(); unsubSounds=null; }
   if (unsubState) { unsubState(); unsubState=null; }
   if (unsubUsers) { unsubUsers(); unsubUsers=null; }
+
 }
