@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SoundCast</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">SC</div>
+      <div>
+        <div class="brandTitle">SoundCast</div>
+        <div class="brandSub" id="modeSub">Modo: —</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="chip">🎛️ Vol: <span id="volLabel">—</span></div>
+      <div class="chip" id="modeChip">—</div>
+
+      <button id="btnCalibrate" class="btn ghost">Calibrar</button>
+      <button id="btnAdminToggle" class="btn ghost hidden">Admin</button>
+
+      <div class="userChip">
+        <span id="userLabel">No sesión</span>
+        <span id="userRole" class="pill">—</span>
+      </div>
+
+      <button id="btnLogout" class="btn danger hidden">Salir</button>
+    </div>
+  </header>
+
+  <!-- Fullscreen mode switch overlay -->
+  <div id="modeOverlay" class="modeOverlay hidden" aria-hidden="true">
+    <div class="modeCard">
+      <div class="modeInner" id="modeInner">
+        <div class="modeFace modeFront" id="modeFront">
+          <div class="modeTitle" id="modeFromTitle">LOCAL</div>
+          <div class="modeDesc" id="modeFromDesc">Solo suena en tu PC</div>
+        </div>
+
+        <div class="modeFace modeBack" id="modeBack">
+          <div class="modeTitle" id="modeToTitle">GLOBAL</div>
+          <div class="modeDesc" id="modeToDesc">Suena en todos</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay bloqueo (solo NO-admin) -->
+  <div id="lockOverlay" class="lockOverlay hidden">
+    <div class="lockCard">
+      <div class="lockIcon">🔒</div>
+      <div class="lockTitle">Sonidos desactivados</div>
+      <div class="lockDesc">El admin ha deshabilitado la interacción.</div>
+    </div>
+  </div>
+
+  <!-- Auth modal -->
+  <div id="authModal" class="modal">
+    <div class="modalCard">
+      <h1>Entrar</h1>
+      <p class="muted">Necesitas iniciar sesión para usar el soundboard.</p>
+
+      <input id="email" placeholder="Email" autocomplete="username" />
+      <input id="pass" type="password" placeholder="Contraseña" autocomplete="current-password" />
+
+      <div class="row">
+        <button id="btnLogin" class="btn primary">Iniciar sesión</button>
+        <button id="btnSignup" class="btn ghost">Crear cuenta</button>
+      </div>
+
+      <p id="authMsg" class="muted"></p>
+      <div class="hint">
+        Si falla: activa <b>Email/Password</b> en Firebase Auth.
+      </div>
+    </div>
+  </div>
+
+  <main class="main">
+    <div class="boardHeader">
+      <div class="statusLine"><span id="statusMsg" class="muted"></span></div>
+      <div class="searchBox">
+        <input id="search" placeholder="Buscar sonido…" />
+      </div>
+    </div>
+
+    <section id="grid" class="grid"></section>
+  </main>
+
+  <!-- Admin drawer -->
+  <aside id="adminDrawer" class="drawer hidden">
+    <div class="drawerTop">
+      <div>
+        <div class="drawerTitle">Panel Admin</div>
+        <div class="muted small">Control global + sonidos + usuarios</div>
+      </div>
+      <button id="btnAdminClose" class="btn ghost">Cerrar</button>
+    </div>
+
+    <div class="drawerTabs">
+      <button class="tab active" data-tab="control">Control</button>
+      <button class="tab" data-tab="sounds">Sonidos</button>
+      <button class="tab" data-tab="users">Usuarios</button>
+    </div>
+
+    <!-- CONTROL TAB -->
+    <div class="drawerBody" id="tab-control">
+      <div class="card">
+        <h3>Control Global</h3>
+
+        <div class="field">
+          <div class="label">Modo</div>
+          <div class="seg">
+            <button id="btnModeLocal" class="segBtn">LOCAL</button>
+            <button id="btnModeGlobal" class="segBtn">GLOBAL</button>
+          </div>
+          <div class="muted small">Solo el admin decide si los clicks emiten o no.</div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="field">
+          <div class="label">Volumen global</div>
+          <input id="volSlider" type="range" min="0" max="100" value="70" />
+          <div class="muted small">Afecta a TODOS los dispositivos.</div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="row2">
+          <label class="toggle2">
+            <input id="allowPlayToggle" type="checkbox" />
+            <span>Permitir tocar sonidos</span>
+          </label>
+
+          <button id="btnStopAll" class="btn danger">STOP ALL</button>
+        </div>
+
+        <p id="adminControlMsg" class="muted"></p>
+      </div>
+    </div>
+
+    <!-- SOUNDS TAB -->
+    <div class="drawerBody hidden" id="tab-sounds">
+      <div class="card">
+        <h3>Añadir sonido (URL)</h3>
+
+        <div id="dropZone" class="dropzone">
+          <b>Arrastra un archivo aquí</b>
+          <div class="muted small">No se sube. Solo autocompleta el nombre.</div>
+        </div>
+
+        <label class="label">Nombre</label>
+        <input id="soundName" placeholder="Ej: bruh.mp3" />
+
+        <label class="label">URL directa (.mp3/.wav/.ogg)</label>
+        <input id="soundUrl" placeholder="https://.../sonido.mp3" />
+
+        <div class="row">
+          <button id="btnTestUrl" class="btn ghost">Probar URL</button>
+          <button id="btnAddSound" class="btn primary">Añadir</button>
+        </div>
+
+        <p id="adminMsg" class="muted"></p>
+      </div>
+
+      <div class="card">
+        <h3>Librería</h3>
+        <div id="soundsList" class="list"></div>
+      </div>
+    </div>
+
+    <!-- USERS TAB -->
+    <div class="drawerBody hidden" id="tab-users">
+      <div class="card">
+        <h3>Usuarios</h3>
+        <div id="usersList" class="list"></div>
+      </div>
+    </div>
+  </aside>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
